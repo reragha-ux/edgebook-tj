@@ -4026,7 +4026,9 @@ function parseDate(s) {
   const d = new Date(s);
   return isNaN(d) ? null : d.toISOString();
 }
-const numv = (s) => { if (s == null || s === '') return NaN; const v = Number(String(s).replace(/[$,\s]/g, '').replace(/^\((.*)\)$/, '-$1')); return v; };
+// Strips a trailing unit such as Binance's "0.05000000BTC" or "3412.50USDT".
+// shortcut: a fee paid in the coin (e.g. 0.00005BTC) is then counted as that many dollars, which is close to zero; convert it at the fill price if exact crypto fees matter.
+const numv = (s) => { if (s == null || s === '') return NaN; const v = Number(String(s).replace(/[$,\s]/g, '').replace(/[A-Za-z]{2,10}$/, '').replace(/^\((.*)\)$/, '-$1')); return v; };
 const sideOf = (s, qty) => { const v = String(s || '').toLowerCase(); if (/^(b|buy|bot|bought|long|buy to open|buy to close)/.test(v)) return 'buy'; if (/^(s|sell|sld|sold|short|sell to open|sell to close)/.test(v)) return 'sell'; return qty < 0 ? 'sell' : 'buy'; };
 const guessAsset = (sym, given) => {
   const g = String(given || '').toLowerCase();
@@ -4116,7 +4118,8 @@ function openImportWizard() {
     // MT4 HTML-exported CSVs and IBKR statements sometimes have preamble lines: start at the widest row
     const width = Math.max(...all.map((r) => r.length));
     const start = all.findIndex((r) => r.length === width);
-    headers = all[start] || []; rows = all.slice(start + 1).filter((r) => r.length >= Math.min(width, 3));
+    // MetaTrader repeats "Time" and "Price" for open and close: number the repeats (Price, Price_1) so presets can tell them apart
+    headers = (all[start] || []).map((h, i, a) => { const n = a.slice(0, i).filter((x) => x.trim() === h.trim()).length; return n ? `${h.trim()}_${n}` : h; }); rows = all.slice(start + 1).filter((r) => r.length >= Math.min(width, 3));
     if (!rows.length) { toast('No data rows found in that file', { tone: 'warn' }); return; }
     fileName = name; preset = detectPreset(headers); map = autoMap(headers, preset); step = 2; render();
   };

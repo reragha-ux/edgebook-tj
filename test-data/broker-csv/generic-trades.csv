@@ -1,0 +1,3 @@
+symbol,direction,size,entry_time,entry_price,exit_time,exit_price,stop,target,fees
+META,long,20,2026-11-07 09:50:00,612.00,2026-11-07 14:10:00,618.50,608.00,620.00,1.00
+AMZN,short,40,2026-11-07 10:20:00,221.30,2026-11-07 13:05:00,222.10,223.00,218.00,1.00
