@@ -61,4 +61,5 @@ Without signing, Windows shows a "Windows protected your PC" warning and Macs re
 - Unit tests for the file-path guard, Polar license response checks and the export page (`npm test`, 3 passing).
 - One-click move against a real old-Edgebook profile, both with the old app closed and open: 70 trades and 2 accounts arrived, and the old window was closed gracefully first.
 - Packaged app: opens, shows the license window on first run, and a failed update check stays silent.
-- Not tested: a live license activation with a real key (a made-up key is correctly rejected by Polar), the auto-update install, the Mac build.
+- Live license activation with a real Polar key (bought in test mode with a 100% discount): activated in the installed app.
+- Not tested: the auto-update install, the Mac build.

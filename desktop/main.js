@@ -72,7 +72,7 @@ const POLAR_ORG = process.env.EDGEBOOK_POLAR_ORG || config.polarOrganizationId;
 
 async function activateLicense(key) {
   key = String(key || '').trim();
-  if (!key) return { ok: false, error: 'Paste the license key from your purchase email.' };
+  if (!key) return { ok: false, error: 'Paste your license key. It is on your Polar purchase page, linked from your receipt email.' };
   let res, json;
   try {
     res = await net.fetch(`${POLAR_API}/v1/customer-portal/license-keys/activate`, {
