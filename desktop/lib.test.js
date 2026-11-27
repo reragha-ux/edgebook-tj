@@ -1,7 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
-const { resolveAppPath, checkActivation, exportPage } = require('./lib');
+const fs = require('fs');
+const os = require('os');
+const { resolveAppPath, checkActivation, exportPage, removeOldAppFiles } = require('./lib');
 
 const dir = path.resolve('app');
 
@@ -27,4 +29,20 @@ test('export page posts to the one-time address and never creates a database', (
   const html = exportPage(5123, 'tok');
   assert.match(html, /http:\/\/127\.0\.0\.1:5123\/tok/);
   assert.match(html, /onupgradeneeded = \(\) => rq\.transaction\.abort\(\)/);
+});
+
+test('old app files are removed, other files and the install folder are not', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'eb-'));
+  const oldDir = path.join(tmp, 'Edgebook');
+  fs.mkdirSync(oldDir);
+  for (const f of ['Edgebook.html', 'edgebook-27f93b60.ico', 'notes.txt']) fs.writeFileSync(path.join(oldDir, f), 'x');
+  assert.equal(removeOldAppFiles(oldDir, oldDir.toUpperCase()), false); // this app lives there: touch nothing
+  assert.equal(fs.readdirSync(oldDir).length, 3);
+  assert.equal(removeOldAppFiles(oldDir, path.join(tmp, 'edgebook-app')), true);
+  assert.deepEqual(fs.readdirSync(oldDir), ['notes.txt']); // unknown files stay, so the folder stays
+  fs.rmSync(path.join(oldDir, 'notes.txt'));
+  fs.writeFileSync(path.join(oldDir, 'Edgebook.html'), 'x');
+  removeOldAppFiles(oldDir, path.join(tmp, 'edgebook-app'));
+  assert.equal(fs.existsSync(oldDir), false);
+  fs.rmSync(tmp, { recursive: true, force: true });
 });

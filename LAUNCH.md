@@ -62,4 +62,6 @@ Without signing, Windows shows a "Windows protected your PC" warning and Macs re
 - One-click move against a real old-Edgebook profile, both with the old app closed and open: 70 trades and 2 accounts arrived, and the old window was closed gracefully first.
 - Packaged app: opens, shows the license window on first run, and a failed update check stays silent.
 - Live license activation with a real Polar key (bought in test mode with a 100% discount): activated in the installed app.
+- Installer: installs to `%LOCALAPPDATA%\Programs\edgebook-app` (not the old app's `Programs\Edgebook`), appears in Settings → Apps, and uninstalling keeps the journal and license.
+- After a successful move, the app removes the old app's page and icon and points an old taskbar pin at the new app (tested on fake shortcuts). The old journal folder is kept as a backup.
 - Not tested: the auto-update install, the Mac build.

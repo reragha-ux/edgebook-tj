@@ -1,5 +1,6 @@
 // Pure helpers for main.js, kept separate so they can be tested without Electron.
 const path = require('path');
+const fs = require('fs');
 
 /** Maps an app://edgebook/<path> URL to a file inside appDir, or null if it would escape it. */
 function resolveAppPath(appDir, url) {
@@ -40,4 +41,16 @@ rq.onsuccess = () => {
 </script>`;
 }
 
-module.exports = { resolveAppPath, checkActivation, exportPage };
+/** Deletes the old Edge-based app's own files (its page and icon) from oldDir, then the folder if that leaves it empty.
+ *  Never runs when this app is installed in that same folder. Returns true if anything was removed. */
+function removeOldAppFiles(oldDir, installDir) {
+  if (!oldDir || path.resolve(oldDir).toLowerCase() === path.resolve(installDir).toLowerCase()) return false;
+  let files;
+  try { files = fs.readdirSync(oldDir); } catch { return false; }
+  const old = files.filter((f) => f === 'Edgebook.html' || /^edgebook-[0-9a-f]+\.ico$/i.test(f));
+  for (const f of old) fs.rmSync(path.join(oldDir, f), { force: true });
+  try { fs.rmdirSync(oldDir); } catch {} // only succeeds when empty
+  return old.length > 0;
+}
+
+module.exports = { resolveAppPath, checkActivation, exportPage, removeOldAppFiles };

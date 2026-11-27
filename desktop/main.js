@@ -9,7 +9,7 @@ const http = require('http');
 const crypto = require('crypto');
 const { spawn, execFile } = require('child_process');
 const { pathToFileURL } = require('url');
-const { resolveAppPath, checkActivation, exportPage } = require('./lib');
+const { resolveAppPath, checkActivation, exportPage, removeOldAppFiles } = require('./lib');
 const config = require('./config.json');
 
 const APP_DIR = path.join(__dirname, 'app');
@@ -92,6 +92,19 @@ async function activateLicense(key) {
 
 // ---------- moving the journal from the old Edge/Chrome install ----------
 const OLD_PROFILE = process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Edgebook', 'Profile') : '';
+const OLD_APP_DIR = process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Programs', 'Edgebook') : '';
+
+/** After the journal has moved: removes the old app's page and icon (its folder clashes with the old uninstaller), and
+ *  points any taskbar pin of the old app at this app. The old journal folder (OLD_PROFILE) is kept as a backup. */
+function retireOldApp() {
+  if (process.platform !== 'win32' || !app.isPackaged) return;
+  try { removeOldAppFiles(OLD_APP_DIR, path.dirname(process.execPath)); } catch {}
+  const q = (s) => s.replace(/'/g, "''");
+  const ps = `$sh = New-Object -ComObject WScript.Shell; $d = Join-Path $env:APPDATA 'Microsoft/Internet Explorer/Quick Launch/User Pinned/TaskBar';
+if (Test-Path $d) { Get-ChildItem $d -Filter *.lnk | ForEach-Object { $l = $sh.CreateShortcut($_.FullName);
+  if ($l.Arguments -like '*${q(OLD_PROFILE)}*') { $l.TargetPath = '${q(process.execPath)}'; $l.Arguments = ''; $l.IconLocation = '${q(process.execPath)},0'; $l.WorkingDirectory = '${q(path.dirname(process.execPath))}'; $l.Save() } } }`;
+  execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps], { timeout: 20000, windowsHide: true }, () => {});
+}
 
 function findBrowser() {
   const e = process.env;
@@ -156,7 +169,7 @@ async function exportOldJournal() {
 // ---------- IPC for migrate.html and license.html ----------
 ipcMain.handle('migrate:status', () => ({ oldJournal: hasOldJournal() }));
 ipcMain.handle('migrate:run', async () => {
-  try { return { ok: true, data: await exportOldJournal() }; } catch (e) { return { ok: false, error: e.message }; }
+  try { const data = await exportOldJournal(); retireOldApp(); return { ok: true, data }; } catch (e) { return { ok: false, error: e.message }; }
 });
 ipcMain.handle('migrate:done', () => { store.migrated = true; saveStore(); });
 ipcMain.handle('license:get', () => ({ licensed: !!store.license, key: store.license ? store.license.key.replace(/.(?=.{4})/g, '•') : '' }));
