@@ -53,8 +53,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "YOUR-GITHUB-USER",
-        "repo": "edgebook"
+        "owner": "reragha-ux",
+        "repo": "edgebook-tj"
       }
     ]
   },

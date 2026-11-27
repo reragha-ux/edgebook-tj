@@ -29,9 +29,9 @@ Lemon Squeezy is used instead of Paddle because it issues license keys itself.
 
 ## 2. GitHub: updates and Mac builds
 
-- [ ] Create a GitHub repository (the update files must be downloadable: a **public** repo is simplest).
-- [ ] Put your GitHub username and repo name in `desktop/package.json` → `build.publish` (replace `YOUR-GITHUB-USER`).
-- [ ] Push this folder, then tag a release: `git tag v1.0.0` and `git push --tags`. The workflow builds both installers into a **draft** release. Publish the draft to ship it.
+- [x] GitHub repository created: `reragha-ux/edgebook-tj`, and set in `desktop/package.json` → `build.publish`. Installed apps can only download updates if the repo is **public**.
+- [x] This folder pushed to `main`.
+- [ ] Tag a release: `git tag v1.0.0` and `git push --tags`. The workflow builds both installers into a **draft** release. Publish the draft to ship it.
 - [ ] Every later release: bump `version` in `desktop/package.json`, tag, push, publish the draft. Installed apps update themselves.
 - [ ] The Mac build has not been tested yet. Try the `.dmg` from the first release on a Mac before saying "Mac" on the website.
 
