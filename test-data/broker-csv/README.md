@@ -10,6 +10,5 @@ Built from the known export layouts, not from real account exports.
 | tradovate.csv | 2 futures trades: MNQZ6 +$47.92, ESZ6 short −$179.20 |
 | metatrader4.csv | 2 trades: EURUSD +$126.50, GBPUSD short −$128.20; the balance row is skipped |
 | metatrader5.csv | same 2 trades as MetaTrader 4 |
-| binance.csv | 2 trades: BTCUSDT +$39.04, ETHUSDT −$42.71 (fees paid in coins count as ~$0) |
 | generic-executions.csv | 2 trades: SPY +$94.00, QQQ short −$45.60 |
 | generic-trades.csv | 2 trades: META +$129.00, AMZN short −$33.00 |

@@ -611,7 +611,7 @@ __m["db/schema.js"] = (() => {
 // Edgebook data model. Every persisted record is a plain JSON object.
 // Images are stored inline as data URLs (or as `gen:` tokens for generated sample charts),
 // annotations are stored as JSON next to the image and never baked into it.
-const ASSET_CLASSES = ['Stock', 'Option', 'Future', 'Forex', 'Crypto', 'CFD', 'ETF'];
+const ASSET_CLASSES = ['Stock', 'Option', 'Future', 'Forex', 'CFD', 'ETF'];
 const TRADE_TYPES = ['Scalp', 'Day trade', 'Swing', 'Position'];
 const TIMEFRAMES = ['1m', '5m', '15m', '1H', '4H', 'D', 'W'];
 const ORDER_TYPES = ['Market', 'Limit', 'Stop', 'Stop-limit'];
@@ -1916,7 +1916,7 @@ const SYMBOLS = [
   { s: 'AMD', ac: 'Stock', base: 152, w: 2 }, { s: 'META', ac: 'Stock', base: 571, w: 2 }, { s: 'MSFT', ac: 'Stock', base: 418, w: 1 },
   { s: 'SPY', ac: 'ETF', base: 583, w: 2 }, { s: 'QQQ', ac: 'ETF', base: 497, w: 2 },
   { s: 'MES', ac: 'Future', base: 5880, w: 3, pv: 5, month: 'Dec 26' }, { s: 'MNQ', ac: 'Future', base: 20750, w: 2, pv: 2, month: 'Dec 26' },
-  { s: 'EURUSD', ac: 'Forex', base: 1.0842, w: 2 }, { s: 'BTCUSD', ac: 'Crypto', base: 68400, w: 2 },
+  { s: 'EURUSD', ac: 'Forex', base: 1.0842, w: 2 }, { s: 'GBPUSD', ac: 'Forex', base: 1.2740, w: 2 },
   { s: 'SPY 585C', ac: 'Option', base: 3.4, w: 2, under: 'SPY', strike: 585, right: 'Call' },
 ];
 const SETUPS = [
@@ -3244,7 +3244,7 @@ function openTradeEditor(id = null, { prefill = {}, restore = null } = {}) {
             <div class="field"><span>Direction<b class="req">*</b></span><div class="dir-toggle" role="group" aria-label="Direction">
               <button type="button" class="dir long ${model.direction === 'long' ? 'on' : ''}" data-dir="long" aria-pressed="${model.direction === 'long'}">▲ Long</button>
               <button type="button" class="dir short ${model.direction === 'short' ? 'on' : ''}" data-dir="short" aria-pressed="${model.direction === 'short'}">▼ Short</button></div></div>
-            ${field('Asset class', 'assetClass', chips('assetClass', ASSET_CLASSES, model.assetClass, { multi: false }), { req: true })}
+            ${field('Asset class', 'assetClass', chips('assetClass', !model.assetClass || ASSET_CLASSES.includes(model.assetClass) ? ASSET_CLASSES : [...ASSET_CLASSES, model.assetClass], model.assetClass, { multi: false }), { req: true })}
             <div class="grid-3">
               ${field('Entry date & time', 'entryTime', dt('entryTime'), { req: true })}
               ${field('Exit date & time', 'exitTime', dt('exitTime'))}
@@ -3991,7 +3991,6 @@ const PRESETS = {
   tos: { name: 'Schwab / thinkorswim (trade history)', mode: 'exec', map: { symbol: ['Symbol'], side: ['Side'], qty: ['Qty', 'Quantity'], price: ['Price', 'Net Price'], time: ['Exec Time', 'Time'], fees: ['Commission', 'Fees'] } },
   tradovate: { name: 'Tradovate (fills / orders)', mode: 'exec', map: { symbol: ['Contract', 'Product', 'Symbol'], side: ['B/S', 'Side', 'Buy/Sell'], qty: ['Filled Qty', 'filledQty', 'Qty', 'Quantity'], price: ['Avg Fill Price', 'avgPrice', 'Price', 'Fill Price'], time: ['Fill Time', 'Timestamp', 'Date', 'Time'], fees: ['Commission', 'Fees'] } },
   mt: { name: 'MetaTrader 4 / 5 (account history)', mode: 'trade', map: { symbol: ['Symbol', 'Item'], direction: ['Type'], size: ['Volume', 'Size', 'Lots'], entryTime: ['Open Time', 'Time'], entryPrice: ['Open Price', 'Price'], exitTime: ['Close Time', 'Time_1'], exitPrice: ['Close Price', 'Price_1'], stop: ['S / L', 'S/L', 'SL'], target: ['T / P', 'T/P', 'TP'], fees: ['Commission'], swap: ['Swap'] } },
-  binance: { name: 'Binance (spot trade history)', mode: 'exec', map: { symbol: ['Pair', 'Market', 'Symbol'], side: ['Side', 'Type'], qty: ['Executed', 'Amount', 'Quantity'], price: ['Price'], time: ['Date(UTC)', 'Date', 'Time'], fees: ['Fee'] } },
   generic: { name: 'Generic executions (one fill per row)', mode: 'exec', map: { symbol: ['symbol', 'ticker'], side: ['side', 'action'], qty: ['qty', 'quantity', 'size', 'shares'], price: ['price', 'fill'], time: ['time', 'datetime', 'date'], fees: ['fees', 'commission'], asset: ['asset', 'asset_class'] } },
   generictrades: { name: 'Generic round-trip trades (one trade per row)', mode: 'trade', map: { symbol: ['symbol'], direction: ['direction', 'side'], size: ['size', 'qty'], entryTime: ['entry_time', 'open_time'], entryPrice: ['entry_price', 'avg_entry', 'open_price'], exitTime: ['exit_time', 'close_time'], exitPrice: ['exit_price', 'avg_exit', 'close_price'], stop: ['stop'], target: ['target'], fees: ['fees'], swap: ['swap'] } },
 };
@@ -4026,14 +4025,11 @@ function parseDate(s) {
   const d = new Date(s);
   return isNaN(d) ? null : d.toISOString();
 }
-// Strips a trailing unit such as Binance's "0.05000000BTC" or "3412.50USDT".
-// shortcut: a fee paid in the coin (e.g. 0.00005BTC) is then counted as that many dollars, which is close to zero; convert it at the fill price if exact crypto fees matter.
-const numv = (s) => { if (s == null || s === '') return NaN; const v = Number(String(s).replace(/[$,\s]/g, '').replace(/[A-Za-z]{2,10}$/, '').replace(/^\((.*)\)$/, '-$1')); return v; };
+const numv = (s) => { if (s == null || s === '') return NaN; const v = Number(String(s).replace(/[$,\s]/g, '').replace(/^\((.*)\)$/, '-$1')); return v; };
 const sideOf = (s, qty) => { const v = String(s || '').toLowerCase(); if (/^(b|buy|bot|bought|long|buy to open|buy to close)/.test(v)) return 'buy'; if (/^(s|sell|sld|sold|short|sell to open|sell to close)/.test(v)) return 'sell'; return qty < 0 ? 'sell' : 'buy'; };
 const guessAsset = (sym, given) => {
   const g = String(given || '').toLowerCase();
-  if (/opt/.test(g)) return 'Option'; if (/fut/.test(g)) return 'Future'; if (/cash|fx|forex/.test(g)) return 'Forex'; if (/crypto/.test(g)) return 'Crypto'; if (/stk|stock/.test(g)) return 'Stock';
-  if (/^(BTC|ETH|SOL|DOGE|XRP)|USDT$/.test(sym)) return 'Crypto';
+  if (/opt/.test(g)) return 'Option'; if (/fut/.test(g)) return 'Future'; if (/cash|fx|forex/.test(g)) return 'Forex'; if (/stk|stock/.test(g)) return 'Stock';
   if (/^[A-Z]{6}$/.test(sym) && /(USD|EUR|JPY|GBP|CHF|AUD|CAD|NZD)/.test(sym)) return 'Forex';
   if (/^\/?(ES|NQ|MES|MNQ|CL|GC|RTY|YM|ZB|ZN|6E)[A-Z]?\d{0,2}$/.test(sym)) return 'Future';
   return null;
@@ -4096,7 +4092,7 @@ function openImportWizard() {
     const result = step === 3 ? buildImport(rows, headers, preset, map, opts) : null;
     el.innerHTML = `<ol class="steps"><li class="${step >= 1 ? 'on' : ''}">File</li><li class="${step >= 2 ? 'on' : ''}">Map columns</li><li class="${step >= 3 ? 'on' : ''}">Review</li></ol>
     ${step === 1 ? `
-      <label class="drop" tabindex="0">${icon('upload', 24)}<div><strong>Choose a CSV export from your broker</strong><br><span class="muted small">Presets: Interactive Brokers, thinkorswim, Tradovate, MetaTrader 4/5, Binance — or any CSV with your own mapping.</span></div><input type="file" accept=".csv,text/csv,.txt" hidden data-file></label>
+      <label class="drop" tabindex="0">${icon('upload', 24)}<div><strong>Choose a CSV export from your broker</strong><br><span class="muted small">Presets: Interactive Brokers, thinkorswim, Tradovate, MetaTrader 4/5 — or any CSV with your own mapping.</span></div><input type="file" accept=".csv,text/csv,.txt" hidden data-file></label>
       <details class="small"><summary>Paste CSV text instead</summary><textarea class="input mono" rows="6" data-paste placeholder="symbol,side,qty,price,time&#10;AAPL,BUY,100,228.10,2026-11-20 15:31"></textarea><button class="btn sm ghost" data-parse>Use pasted text</button></details>` : ''}
     ${step === 2 ? `
       <p class="muted small">${esc(fileName)} · ${rows.length} rows. ${PRESETS[preset].mode === 'exec' ? 'Each row is one fill; fills are merged into round-trip trades automatically.' : 'Each row is already a complete trade.'}</p>
@@ -4777,7 +4773,7 @@ function renderSettings(el) {
       <form class="inline-add" data-add-list="${k}"><input class="input sm" placeholder="Add to ${l.toLowerCase()}" aria-label="Add to ${l}"><button class="btn sm ghost">Add</button></form></div>`).join('')}</div></section>
   <section class="card set-sec"><h2>Data</h2>
     <div class="data-grid">
-      <div><h3>Import</h3><p class="muted small">CSV from Interactive Brokers, thinkorswim, Tradovate, MetaTrader 4/5, Binance or any broker with a column-mapping step.</p><button class="btn ghost" data-import>${icon('upload', 16)} Import CSV</button></div>
+      <div><h3>Import</h3><p class="muted small">CSV from Interactive Brokers, thinkorswim, Tradovate, MetaTrader 4/5 or any broker with a column-mapping step.</p><button class="btn ghost" data-import>${icon('upload', 16)} Import CSV</button></div>
       <div><h3>Export</h3><p class="muted small">All ${state.trades.length} trades with calculated fields.</p><div class="btn-row"><button class="btn ghost" data-exp-csv>${icon('download', 16)} CSV</button><button class="btn ghost" data-exp-json>JSON</button></div></div>
       <div><h3>Backup & restore</h3><p class="muted small">One JSON file with everything, chart images and annotations included.</p><div class="btn-row"><button class="btn ghost" data-backup>${icon('download', 16)} Backup</button><label class="btn ghost">${icon('upload', 16)} Restore<input type="file" accept=".json,application/json" hidden data-restore></label></div></div>
       <div><h3>Sample data</h3><p class="muted small">70 trades with annotated charts, 5 setups, journal entries and goals.</p><div class="btn-row"><button class="btn ghost" data-sample>${icon('sparkle', 16)} Load sample data</button><button class="btn danger-ghost" data-wipe>${icon('trash', 16)} Delete everything</button></div></div>
