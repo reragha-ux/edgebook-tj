@@ -1,4 +1,4 @@
-# Publishes site/ to GitHub Pages on every push to main that changes it.
+# Publishes site/ to GitHub Pages on every push to main that changes it. Free Pages needs the repo to be public.
 name: Website
 on:
   push:
