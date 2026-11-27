@@ -1,0 +1,4 @@
+node_modules/
+desktop/dist/
+*.stackdump
+**/.impeccable/hook.cache.json

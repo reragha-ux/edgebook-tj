@@ -1,0 +1,29 @@
+/* Shared by migrate.html and license.html; colours copied from Edgebook.html's dark theme. */
+:root {
+  --bg: #1b1d16; --card: #23261d; --card2: #2a2d22; --line: rgba(242, 237, 224, .1); --line2: rgba(242, 237, 224, .2);
+  --ink: #f2ede0; --ink2: #c3bea9; --muted: #9a9883; --accent2: #b9c79c;
+  --primary: #f3d67c; --primary-hover: #f7e09a; --on-primary: #2b2e22; --neg: #d98d6c; --pos: #a9c27a;
+  --font: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif; --mono: "Cascadia Code", Consolas, ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font); display: grid; place-items: center; padding: 24px; }
+[hidden] { display: none !important; }
+.panel { width: min(520px, 100%); display: grid; gap: 18px; }
+.mark { width: 48px; height: 48px; }
+h1 { font-size: 24px; line-height: 1.25; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+p { margin: 0; color: var(--ink2); }
+.muted { color: var(--muted); font-size: 13px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+button { font: 600 14px var(--font); border-radius: 11px; padding: 10px 16px; cursor: pointer; border: 1px solid var(--line2); background: transparent; color: var(--ink); }
+button.primary { background: var(--primary); color: var(--on-primary); border-color: transparent; }
+button.primary:hover { background: var(--primary-hover); }
+button:disabled { opacity: .55; cursor: default; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+input { width: 100%; font: 14px var(--mono); padding: 11px 12px; border-radius: 11px; border: 1px solid var(--line2); background: var(--card); color: var(--ink); }
+.note { background: var(--card); border: 1px solid var(--line); border-radius: 11px; padding: 12px 14px; font-size: 13px; color: var(--ink2); }
+.err { color: var(--neg); font-size: 13px; min-height: 1.2em; }
+.ok { color: var(--pos); }
+ol { margin: 0; padding-left: 20px; color: var(--ink2); font-size: 13px; }
+@media (prefers-reduced-motion: no-preference) { button { transition: background .15s; } }

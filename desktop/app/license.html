@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Edgebook license</title>
+<link rel="stylesheet" href="desktop.css">
+</head>
+<body>
+<main class="panel">
+  <h1 id="title">Activate Edgebook</h1>
+  <p id="lead">Paste the license key from your purchase email. Edgebook keeps working while you decide.</p>
+  <form id="form" class="panel" style="gap:10px">
+    <label for="key" class="muted">License key</label>
+    <input id="key" autocomplete="off" spellcheck="false" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX">
+    <div class="err" id="msg" role="status" aria-live="polite"></div>
+    <div class="row">
+      <button class="primary" id="activate" type="submit">Activate</button>
+      <button id="buy" type="button">Buy Edgebook, $5</button>
+      <button id="later" type="button">Not now</button>
+    </div>
+  </form>
+</main>
+<script>
+const api = window.edgebookDesktop;
+const $ = (id) => document.getElementById(id);
+async function show() {
+  const s = await api.licenseGet();
+  if (!s.licensed) return $('key').focus();
+  $('title').textContent = 'Edgebook is activated';
+  $('lead').textContent = `License ${s.key}. Thank you for supporting Edgebook.`;
+  $('form').hidden = true;
+  const close = Object.assign(document.createElement('button'), { className: 'primary', textContent: 'Close', onclick: api.licenseClose });
+  document.querySelector('main').append(close);
+  close.focus();
+}
+$('form').onsubmit = async (e) => {
+  e.preventDefault();
+  $('activate').disabled = true; $('activate').textContent = 'Checking…'; $('msg').textContent = '';
+  const r = await api.licenseActivate($('key').value);
+  $('activate').disabled = false; $('activate').textContent = 'Activate';
+  if (r.ok) return show();
+  $('msg').textContent = r.error;
+};
+$('buy').onclick = api.licenseBuy;
+$('later').onclick = api.licenseClose;
+show();
+</script>
+</body>
+</html>

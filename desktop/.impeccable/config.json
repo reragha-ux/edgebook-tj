@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "plus jakarta sans",
+        "createdAt": "2026-11-27T08:58:04.938Z",
+        "reason": "Claude: Edgebook's existing brand font, embedded in app/Edgebook.html; helper pages and site match it"
+      }
+    ]
+  }
+}

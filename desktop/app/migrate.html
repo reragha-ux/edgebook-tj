@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Edgebook</title>
+<link rel="stylesheet" href="desktop.css">
+</head>
+<body>
+<main class="panel" id="panel" hidden>
+  <svg class="mark" viewBox="0 0 256 256" aria-hidden="true"><rect x="8" y="8" width="240" height="240" rx="58" fill="#2c3024"/><path d="M64 176l40-48 32 24 52-68" fill="none" stroke="#f3d67c" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/><circle cx="192" cy="80" r="14" fill="#f3d67c"/></svg>
+  <h1 id="title">Bring your journal into the new Edgebook</h1>
+  <p id="lead">We found a journal from the earlier Edgebook on this PC. Move it here so you can keep working with your trades, charts and notes. The old copy stays where it is.</p>
+  <div class="note" id="tip">If the old Edgebook is open, it closes first and saves anything you were typing.</div>
+  <div class="row" id="actions">
+    <button class="primary" id="move">Move my journal</button>
+    <button id="fresh">Start fresh</button>
+  </div>
+  <div class="err" id="msg" role="status" aria-live="polite"></div>
+  <div id="manual" hidden>
+    <p class="muted">You can also move it by hand:</p>
+    <ol>
+      <li>Open the old Edgebook and go to Settings → Data → Backup.</li>
+      <li>Here, click Start fresh, then go to Settings → Data → Restore and pick that file.</li>
+    </ol>
+  </div>
+</main>
+<script>
+const api = window.edgebookDesktop;
+const KEYS = ['accounts', 'setups', 'trades', 'journal', 'goals', 'settings'];
+const $ = (id) => document.getElementById(id);
+
+// Same database, store and keys as Edgebook.html, so the app finds the moved journal when it opens.
+function openDb() {
+  return new Promise((res, rej) => {
+    const rq = indexedDB.open('edgebook', 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = () => rej(rq.error);
+  });
+}
+const get = (db, k) => new Promise((res) => { const g = db.transaction('kv').objectStore('kv').get(k); g.onsuccess = () => res(g.result); g.onerror = () => res(undefined); });
+function putAll(db, data) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction('kv', 'readwrite');
+    for (const k of KEYS) if (data[k] !== undefined) tx.objectStore('kv').put(data[k], k);
+    tx.oncomplete = res; tx.onerror = tx.onabort = () => rej(tx.error);
+  });
+}
+async function openApp() { await api.migrateDone(); location.replace('Edgebook.html'); }
+
+async function start() {
+  const db = await openDb();
+  const trades = await get(db, 'trades'), settings = await get(db, 'settings');
+  if ((trades && trades.length) || (settings && settings.onboarded)) return openApp(); // this app already has a journal
+  const { oldJournal } = await api.migrateStatus();
+  if (!oldJournal) return openApp();
+  $('panel').hidden = false;
+  $('move').focus();
+  $('fresh').onclick = openApp;
+  $('move').onclick = async () => {
+    $('move').disabled = $('fresh').disabled = true;
+    $('move').textContent = 'Moving your journal…';
+    $('msg').className = 'err'; $('msg').textContent = ''; $('manual').hidden = true;
+    const r = await api.migrateRun();
+    if (r.ok) {
+      try {
+        await putAll(db, r.data);
+        const n = (r.data.trades || []).length;
+        $('msg').className = 'ok'; $('msg').textContent = `Moved ${n} trade${n === 1 ? '' : 's'}. Opening Edgebook…`;
+        return setTimeout(openApp, 900);
+      } catch (e) { r.error = `The journal could not be saved here: ${e.message}`; }
+    }
+    $('msg').textContent = r.error;
+    $('manual').hidden = false;
+    $('move').textContent = 'Try again';
+    $('move').disabled = $('fresh').disabled = false;
+  };
+}
+start().catch(openApp);
+</script>
+</body>
+</html>
