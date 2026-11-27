@@ -22,7 +22,7 @@ Polar is the merchant of record (it handles sales tax and VAT) and issues the li
 
 - [x] Organization created; checkout link and organization ID are in `desktop/config.json` and the website's Buy links.
 - [ ] Finish payouts (Finance → Stripe form) and any account review Polar asks for.
-- [ ] Product "Edgebook", one-time, **$10**, with a License Keys benefit: no expiry, activation limit 3, **require activation on**, customers can deactivate devices.
+- [ ] Product "Edgebook", one-time, **$10**, with a License Keys benefit: prefix `EDGEBOOK`, **Expires** off, **Limit Activations** on and set to 3 (required: without it Polar refuses every activation from the app), **Enable user to deactivate instances via Polar** on.
 - [ ] After the next release, add the installer to the product as a File Downloads benefit.
 - [ ] Test a real key: in sandbox.polar.sh make the same product, buy it with a test card, then run the app with
       `EDGEBOOK_POLAR_API=https://sandbox-api.polar.sh` and `EDGEBOOK_POLAR_ORG=<sandbox org id>` and activate from **Edgebook → License key…**.
