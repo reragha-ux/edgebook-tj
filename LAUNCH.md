@@ -8,24 +8,25 @@ What's built, and the steps only you can do, because they need your accounts, mo
 | --- | --- |
 | `desktop/` | The Edgebook desktop app (Electron). Loads the unchanged `app/Edgebook.html`. |
 | `desktop/app/migrate.html` | First-launch screen that moves a journal from the old Edge-based Edgebook in one click. |
-| `desktop/app/license.html` | License key window (Lemon Squeezy). Honour system: the app works without a key and reminds at most once a week. |
-| `desktop/config.json` | Your checkout link, Lemon Squeezy product ID and website. **Placeholders until you fill them in.** |
+| `desktop/app/license.html` | License key window (Polar). Honour system: the app works without a key and reminds at most once a week. |
+| `desktop/config.json` | Your Polar checkout link and organization ID (filled in), and your website (**still a placeholder**). |
 | `desktop/dist/Edgebook-Setup-1.0.0.exe` | Windows installer, built locally, unsigned. |
 | `.github/workflows/release.yml` | Builds Windows and Mac installers on GitHub when you push a tag like `v1.0.1`. |
 | `site/` | The landing page (static HTML + screenshots of the sample journal). |
 
 Commands, run in `desktop/`: `npm start` runs the app, `npm test` runs the tests, `npm run dist:win` builds the installer.
 
-## 1. Payments: Lemon Squeezy
+## 1. Payments: Polar
 
-Lemon Squeezy is used instead of Paddle because it issues license keys itself.
+Polar is the merchant of record (it handles sales tax and VAT) and issues the license keys. Lemon Squeezy stopped taking new sellers.
 
-- [ ] Create a store at lemonsqueezy.com and finish payout and tax setup.
-- [ ] Create a product "Edgebook", $5, one-time. Turn on **license keys** (activation limit around 3).
-- [ ] Attach the installer file to the product so buyers can download it after paying.
-- [ ] Copy the product's checkout link into `desktop/config.json` → `checkoutUrl`, and into `site/index.html` (search for `YOUR-STORE`, 4 places).
-- [ ] Copy the product ID (a number) into `config.json` → `lemonSqueezyProductId`. This stops keys from other products activating Edgebook.
-- [ ] Make a test purchase in test mode, then activate the key from **Edgebook → License key…**.
+- [x] Organization created; checkout link and organization ID are in `desktop/config.json` and the website's Buy links.
+- [ ] Finish payouts (Finance → Stripe form) and any account review Polar asks for.
+- [ ] Product "Edgebook", one-time, **$10**, with a License Keys benefit: no expiry, activation limit 3, **require activation on**, customers can deactivate devices.
+- [ ] After the next release, add the installer to the product as a File Downloads benefit.
+- [ ] Test a real key: in sandbox.polar.sh make the same product, buy it with a test card, then run the app with
+      `EDGEBOOK_POLAR_API=https://sandbox-api.polar.sh` and `EDGEBOOK_POLAR_ORG=<sandbox org id>` and activate from **Edgebook → License key…**.
+- [ ] Decide a refund rule (for example 14 days) and add it to the website FAQ.
 
 ## 2. GitHub: updates and Mac builds
 
@@ -57,7 +58,7 @@ Without signing, Windows shows a "Windows protected your PC" warning and Macs re
 
 ## Tested so far
 
-- Unit tests for the file-path guard, license response checks and the export page (`npm test`, 3 passing).
+- Unit tests for the file-path guard, Polar license response checks and the export page (`npm test`, 3 passing).
 - One-click move against a real old-Edgebook profile, both with the old app closed and open: 70 trades and 2 accounts arrived, and the old window was closed gracefully first.
 - Packaged app: opens, shows the license window on first run, and a failed update check stays silent.
-- Not tested: a live license activation (needs your store), the auto-update install, the Mac build.
+- Not tested: a live license activation with a real key (a made-up key is correctly rejected by Polar), the auto-update install, the Mac build.

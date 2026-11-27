@@ -1,5 +1,5 @@
 {
-  "checkoutUrl": "https://YOUR-STORE.lemonsqueezy.com/buy/YOUR-PRODUCT-ID",
-  "lemonSqueezyProductId": 0,
+  "checkoutUrl": "https://buy.polar.sh/polar_cl_esJTZTAzT658SgeXBpjLFWIkhj5fLjAE6HdRF0mgLbs",
+  "polarOrganizationId": "11957c22-1b6f-4453-a0a4-44303bf44178",
   "websiteUrl": "https://YOUR-DOMAIN"
 }

@@ -8,11 +8,15 @@ function resolveAppPath(appDir, url) {
   return file.startsWith(path.resolve(appDir) + path.sep) ? file : null;
 }
 
-/** Checks a Lemon Squeezy /v1/licenses/activate response. productId 0/empty skips the product check. */
-function checkActivation(json, productId) {
-  if (!json || !json.activated) return { ok: false, error: (json && json.error) || 'That key was not accepted.' };
-  if (productId && json.meta?.product_id !== productId) return { ok: false, error: 'That key is for a different product.' };
-  return { ok: true, instanceId: json.instance?.id };
+/** Checks a Polar /v1/customer-portal/license-keys/activate response (HTTP status + JSON body). */
+function checkActivation(status, json, orgId) {
+  if (status === 200 && json?.id && json.license_key?.status === 'granted') {
+    if (orgId && json.license_key.organization_id !== orgId) return { ok: false, error: 'That key is for a different product.' };
+    return { ok: true, instanceId: json.id };
+  }
+  if (status === 404) return { ok: false, error: 'That key was not found. Check that you pasted all of it.' };
+  if (status === 403) return { ok: false, error: 'This key is already active on its maximum number of computers, or is no longer valid. You can free a computer from your Polar purchase page.' };
+  return { ok: false, error: 'That key was not accepted.' };
 }
 
 /** The page a headless Edge/Chrome opens inside the old install's profile to send its journal to us. */

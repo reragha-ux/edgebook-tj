@@ -65,22 +65,26 @@ function maybeNag() {
   openLicenseWindow();
 }
 
-// ---------- license (Lemon Squeezy; honour system: the app works without a key) ----------
+// ---------- license (Polar; honour system: the app works without a key) ----------
+// EDGEBOOK_POLAR_API / EDGEBOOK_POLAR_ORG point at sandbox-api.polar.sh and a sandbox org for testing.
+const POLAR_API = process.env.EDGEBOOK_POLAR_API || 'https://api.polar.sh';
+const POLAR_ORG = process.env.EDGEBOOK_POLAR_ORG || config.polarOrganizationId;
+
 async function activateLicense(key) {
   key = String(key || '').trim();
   if (!key) return { ok: false, error: 'Paste the license key from your purchase email.' };
-  let json;
+  let res, json;
   try {
-    const res = await net.fetch('https://api.lemonsqueezy.com/v1/licenses/activate', {
+    res = await net.fetch(`${POLAR_API}/v1/customer-portal/license-keys/activate`, {
       method: 'POST',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ license_key: key, instance_name: `Edgebook on ${process.platform === 'darwin' ? 'Mac' : 'Windows'}` }).toString(),
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, organization_id: POLAR_ORG, label: `Edgebook on ${process.platform === 'darwin' ? 'Mac' : 'Windows'}` }),
     });
-    json = await res.json();
+    json = await res.json().catch(() => null);
   } catch {
     return { ok: false, error: 'Could not reach the license server. Check your internet connection and try again.' };
   }
-  const r = checkActivation(json, config.lemonSqueezyProductId);
+  const r = checkActivation(res.status, json, POLAR_ORG);
   if (!r.ok) return r;
   store.license = { key, instanceId: r.instanceId, activatedAt: new Date().toISOString() }; saveStore();
   return { ok: true };
