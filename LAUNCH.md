@@ -45,11 +45,26 @@ Without signing, Windows shows a "Windows protected your PC" warning and Macs re
 - [ ] Windows: an Azure Trusted Signing account or an OV code-signing certificate. Add it as repo secrets `WIN_CERT_PFX_BASE64` and `WIN_CERT_PASSWORD`.
 - [ ] Mac: Apple Developer Program ($99 a year). Add secrets `MAC_CERT_P12_BASE64`, `MAC_CERT_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`. Mac auto-updates only work once the app is signed.
 
-## 4. Website
+## 4. Website (GitHub Pages)
 
-- [ ] Buy a domain and host `site/` on any static host (Cloudflare Pages, Netlify, GitHub Pages).
-- [ ] Replace `YOUR-WAITLIST-FORM` with a Vault waitlist form (any email tool), `YOUR-SUPPORT-EMAIL` with your address, and `websiteUrl` in `config.json`.
-- [ ] Decide a refund policy and add it to the FAQ.
+- [x] Support email `reragha.edgebook.support@gmail.com`, 14-day refund FAQ, Vault waitlist (email for now) and `websiteUrl` filled in.
+- [x] `.github/workflows/pages.yml` publishes `site/` on every push to `main` that changes it.
+- [ ] Make the repo public (Settings → General → Danger Zone → Change visibility). Free GitHub Pages needs it, and so do auto-updates.
+- [ ] Settings → Pages → Build and deployment → Source: **GitHub Actions**. Then Actions → Website → **Run workflow**.
+- [ ] Check https://reragha-ux.github.io/edgebook-tj/ loads. A custom domain can be added later under Settings → Pages.
+
+## 4b. Polar: go live
+
+Dashboard → **Finance → Account**. **Submit for review** unlocks when every item is done:
+- [ ] Create your first product · Set up checkout (both done).
+- [ ] Verify your identity (Stripe Identity: ID + selfie).
+- [ ] Connect a payout account (Stripe Connect Express).
+- [ ] Describe what you sell (30+ characters).
+- [ ] Add your product website: https://reragha-ux.github.io/edgebook-tj/ (must be public and load within 5 s).
+- [ ] Add a support email: reragha.edgebook.support@gmail.com (Polar sends a code).
+- [ ] Submit for review. The automated review takes 1–2 minutes; a person may review it after.
+
+Polar's Acceptable Use Policy bars "trading and financial services", including trading signals, advice and "insights platforms". Edgebook is record-keeping software, so describe it that way and never as signals or advice. If the review is unsure, ask support@polar.sh.
 
 ## 5. Before launch day
 
